@@ -19,6 +19,10 @@ export default defineConfig({
         replacement: path.resolve(__dirname, 'node_modules/sheryjs/dist/Shery.js')
       },
       {
+        find: /^THREE$/,
+        replacement: 'three'
+      },
+      {
         find: /^[Cc]ontrol[Kk]it$/,
         replacement: path.resolve(__dirname, 'src/utils/controlkitMock.js')
       }
