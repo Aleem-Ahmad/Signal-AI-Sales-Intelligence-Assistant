@@ -1,0 +1,21 @@
+
+:root {
+  font-family: 'Inter', sans-serif;
+
+  --color-ink: #22231f;
+  --color-sidebar: #20221f;
+  --color-paper: #f5f4ef;
+  --color-white: #ffffff;
+  --color-muted: #85877f;
+  --color-border: #e5e4dc;
+  --color-accent: #b8ed78;
+  --color-accent-dark: #27351d;
+  --color-danger: #b84b43;
+
+  --font-display: 'DM Serif Display', serif;
+
+  --radius-sm: 5px;
+  --radius-md: 9px;
+
+  --shadow-soft: 0 8px 30px rgba(30, 32, 26, 0.04);
+}
