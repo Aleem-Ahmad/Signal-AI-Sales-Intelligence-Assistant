@@ -21,22 +21,38 @@ const cleanJsonText = (raw) => {
   return text;
 };
 
+const callModelWithTimeout = (model, prompt, timeoutMs = 8000) => {
+  return Promise.race([
+    genAI.models.generateContent({
+      model,
+      contents: prompt,
+      config: {
+        responseMimeType: 'application/json',
+        temperature: 0.2,
+      },
+    }),
+    new Promise((_, reject) =>
+      setTimeout(
+        () => reject(new Error(`Model ${model} timed out after ${timeoutMs}ms`)),
+        timeoutMs
+      )
+    ),
+  ]);
+};
+
 const analyzeWithGemini = async (inputText, analysisType) => {
   const prompt = buildAnalysisPrompt(inputText, analysisType);
-  const modelsToTry = Array.from(new Set([GEMINI_MODEL, 'gemini-3.5-flash-lite', 'gemini-3.8-flash'].filter(Boolean)));
+  // Prioritize high-speed, reliable flash-lite models first
+  const modelsToTry = Array.from(
+    new Set(['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', GEMINI_MODEL].filter(Boolean))
+  );
 
   let lastError = null;
 
   for (const model of modelsToTry) {
+    const startTime = Date.now();
     try {
-      const response = await genAI.models.generateContent({
-        model,
-        contents: prompt,
-        config: {
-          responseMimeType: 'application/json',
-          temperature: 0.2,
-        },
-      });
+      const response = await callModelWithTimeout(model, prompt, 8000);
 
       if (!response || !response.text) {
         throw new Error('Gemini returned an empty response');
@@ -44,10 +60,15 @@ const analyzeWithGemini = async (inputText, analysisType) => {
 
       const cleanedText = cleanJsonText(response.text);
       const parsedResult = JSON.parse(cleanedText);
+      const validated = resultSchema.parse(parsedResult);
 
-      return resultSchema.parse(parsedResult);
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+      console.log(`[Gemini] Model ${model} responded successfully in ${elapsed}s`);
+
+      return validated;
     } catch (error) {
-      console.error(`Gemini Service Error (model: ${model}):`, error.message);
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+      console.warn(`[Gemini] Model ${model} failed after ${elapsed}s: ${error.message}`);
       lastError = error;
     }
   }

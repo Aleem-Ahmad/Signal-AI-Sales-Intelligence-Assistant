@@ -1,4 +1,3 @@
-
 const buildAnalysisPrompt = (inputText, analysisType) => {
   return `
 You are a professional sales intelligence assistant.

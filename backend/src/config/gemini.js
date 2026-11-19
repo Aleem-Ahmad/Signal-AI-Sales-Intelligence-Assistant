@@ -13,7 +13,7 @@ const genAI = new GoogleGenAI({
 });
 
 const GEMINI_MODEL =
-  process.env.GEMINI_MODEL || 'gemini-3.8-flash';
+  process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
 
 module.exports = {
   genAI,
