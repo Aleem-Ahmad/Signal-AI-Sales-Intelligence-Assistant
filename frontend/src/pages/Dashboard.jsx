@@ -1,39 +1,26 @@
-import { useState, useEffect } from 'react';
+
+import { useState } from 'react';
+import { Sparkles } from 'lucide-react';
+
 import InputPanel from '../components/InputPanel';
 import ResultPanel from '../components/ResultPanel';
 import { analyzeInput } from '../services/api';
-import { initMagnets, initCardAnimations, initTextAnimations } from '../utils/sheryAnimations';
 
 const Dashboard = () => {
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    initTextAnimations('.shery-title');
-    initMagnets();
-    initCardAnimations();
-  }, []);
-
-  useEffect(() => {
-    if (analysis) {
-      const timer = setTimeout(() => {
-        initMagnets();
-        initCardAnimations();
-      }, 60);
-      return () => clearTimeout(timer);
-    }
-  }, [analysis]);
-
   const handleAnalyze = async (payload) => {
     setLoading(true);
     setError('');
+    setAnalysis(null);
 
     try {
       const response = await analyzeInput(payload);
       setAnalysis(response.data);
     } catch (err) {
-      setError(err.message || 'Failed to analyze conversation');
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -43,31 +30,40 @@ const Dashboard = () => {
     <main className="page-content">
       <header className="page-header">
         <div>
-          <span className="eyebrow">WORKSPACE / COCKPIT</span>
-          <h1 className="shery-title">Deal intelligence.</h1>
-          <p>Extract instant sales signal from raw prospect communication.</p>
+          <span className="eyebrow">WORKSPACE / OVERVIEW</span>
+          <h1>Sales intelligence.</h1>
+          <p>Less reading. Better decisions.</p>
         </div>
 
-        <div className="header-tag magnet-target">
-          <span className="status-dot"></span>
-          AI ENGINE READY
+        <div className="header-tag">
+          <Sparkles size={16} />
+          POWERED BY GEMINI
         </div>
       </header>
 
-      {error && <div className="error-message">{error}</div>}
+      {error && (
+        <div className="error-message" role="alert">
+          {error}
+        </div>
+      )}
 
       <div className="dashboard-grid">
-        <InputPanel onAnalyze={handleAnalyze} loading={loading} />
+        <InputPanel
+          onAnalyze={handleAnalyze}
+          loading={loading}
+        />
 
-        {loading ? (
-          <section className="result-panel loading-panel">
-            <div className="loader"></div>
-            <h3>Extracting intelligence...</h3>
-            <p>Synthesizing conversation data with Gemini</p>
-          </section>
-        ) : (
-          <ResultPanel analysis={analysis} />
-        )}
+        <div className="result-wrapper">
+          {loading ? (
+            <section className="result-panel loading-panel">
+              <div className="loader"></div>
+              <h3>Reading the conversation...</h3>
+              <p>Gemini is extracting useful business intelligence.</p>
+            </section>
+          ) : (
+            <ResultPanel analysis={analysis} />
+          )}
+        </div>
       </div>
     </main>
   );
